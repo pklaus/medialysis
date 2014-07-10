@@ -123,7 +123,6 @@ def main():
     loud_sections_duration = []
     w.setpos(skipframes*chunksize)
     player.seek(float(skipframes * chunksize) / framerate)
-    player.play()
     time.sleep(0.5)
     i = skipframes
     while True:
