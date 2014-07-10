@@ -112,6 +112,7 @@ def main():
     nchannels = w.getnchannels()
     
     def get_dB(samplevalue):
+        samplevalue = max(samplevalue, 1)
         return 20*math.log(float(samplevalue) /(2**15-1))/math.log(10)
     
     # convert skip from s to frames:
