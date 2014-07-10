@@ -38,8 +38,6 @@ print("Skipping {} frames".format(skipframes))
 rms = []
 on = False
 loud_sections_duration = []
-#for i in range(skipframes):
-#    w.readframes(chunksize)
 w.setpos(skipframes*chunksize)
 player.seek(float(skipframes * chunksize) / framerate)
 player.play()
@@ -48,12 +46,10 @@ i = skipframes
 while True:
     f = w.readframes(chunksize)
     if len(f) < (chunksize * samplewidth): break
-    #import pdb; pdb.set_trace()
     d = struct.unpack("<" + str(chunksize) + "h", f)
     position = float(i * chunksize) / framerate
     value = audioop.rms(f, samplewidth)
     dB = get_dB(value)
-    #print(value)
     rms.append(value)
     if not on and dB >= args.threshold_on:
         on = True
@@ -78,7 +74,8 @@ while True:
         player.pause()
         if args.confirm_continue:
             input("Please press [Enter] to continue")
-    if on: loud_rms_values.append(value)
+    if on:
+        loud_rms_values.append(value)
     else:
         sys.stdout.write("Current value: {:5d} ({:.1f} dB)        \r".format(value, dB))
         sys.stdout.flush()
