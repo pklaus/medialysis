@@ -22,6 +22,10 @@ class Player(object):
         raise NotImplemented
 
 class PygletAudioPlayer(Player):
+
+    def __init__(self):
+        import pyglet
+
     def open(self, filename):
         import pyglet
         self.filename = filename
@@ -43,6 +47,10 @@ class PygletAudioPlayer(Player):
         return self.player.time
 
 class PyaudioAudioPlayer(Player):
+
+    def __init__(self):
+        import pyaudio
+
     def open(self, filename):
         import pyaudio
         wf = wave.open(filename, 'rb')
