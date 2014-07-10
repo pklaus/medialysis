@@ -129,7 +129,9 @@ def main():
     while True:
         f = w.readframes(chunksize)
         if len(f) < (chunksize * samplewidth): break
-        d = struct.unpack("<" + str(chunksize) + "h", f)
+        d = struct.unpack("<" + str(nchannels * chunksize) + "h", f)
+        left = d[::2]
+        right = d[1::2]
         position = float(i * chunksize) / framerate
         value = audioop.rms(f, samplewidth)
         dB = get_dB(value)
