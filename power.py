@@ -162,15 +162,17 @@ def main():
         if on:
             loud_rms_values.append(value)
         else:
-            sys.stdout.write("Current value: {:5d} ({:.1f} dB)        \r".format(value, dB))
+            sys.stdout.write("Current power: {:5.1f} dB         \r".format(dB))
             sys.stdout.flush()
+            # in confirm-continue mode you may also want to have more time to see the current power:
+            if args.confirm_continue: time.sleep(0.001)
         i += 1
     
     if len(loud_sections_duration) > 0:
         print("Number of loud sections: {}".format(len(loud_sections_duration)))
         average_sections = sum(loud_sections_duration)/float(len(loud_sections_duration))
-        print("Average number of pieces in loud section: {:.1f}".format(average_sections))
-        print("Average duration of loud section: {:.3f} s".format( average_sections * chunksize / framerate ))
+        print("Average number of chunks in loud sections: {:.1f}".format(average_sections))
+        print("Average duration of loud sections: {:.3f} s".format( average_sections * chunksize / framerate ))
     else:
         print("No loud sections found!")
     print("Analyzed {} pieces of {} samples each.".format(len(rms), chunksize))
