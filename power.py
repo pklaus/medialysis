@@ -6,8 +6,82 @@ import sys
 import struct
 import audioop
 import time
-import pyglet
 import math
+
+class Player(object):
+    def open(self, filename):
+        self.filename = filename
+
+    def play(self):
+        raise NotImplemented
+
+    def pause(self):
+        raise NotImplemented
+
+    def seek(self, seconds = 0.0):
+        raise NotImplemented
+
+class PygletAudioPlayer(Player):
+    def open(self, filename):
+        import pyglet
+        self.filename = filename
+        self.player = pyglet.media.Player()
+        music = pyglet.media.load(filename)
+        self.player.queue(music)
+
+    def play(self):
+        self.player.play()
+
+    def pause(self):
+        self.player.pause()
+
+    def seek(self, seconds = 0.0):
+        self.player.seek(seconds)
+
+    @property
+    def time(self):
+        return self.player.time
+
+class PyaudioAudioPlayer(Player):
+    def open(self, filename):
+        import pyaudio
+        wf = wave.open(filename, 'rb')
+        self.p = pyaudio.PyAudio()
+        self.pos = 0
+        def callback(in_data, frame_count, time_info, status):
+            data = wf.readframes(frame_count)
+            self.pos += frame_count
+            return (data, pyaudio.paContinue)
+        self.stream = self.p.open(format=self.p.get_format_from_width(wf.getsampwidth()),
+                channels=wf.getnchannels(),
+                rate=wf.getframerate(),
+                output=True,
+                stream_callback=callback)
+        self.pause()
+        self.wf = wf
+
+    def play(self):
+        self.stream.start_stream()
+
+    def pause(self):
+        self.stream.stop_stream()
+
+    def seek(self, seconds = 0.0):
+        self.pos = int(seconds * self.wf.getframerate())
+        self.wf.setpos( int(seconds * self.wf.getframerate()) )
+
+    @property
+    def time(self):
+        return float(self.pos)/self.wf.getframerate()
+
+    @property
+    def playing():
+        return self.stream.is_active()
+
+    def close():
+        self.stream.close()
+        self.wf.close()
+        self.p.terminate()
 
 parser = argparse.ArgumentParser(description='Analyze RMS values and calculate dB of sections in audio files.')
 parser.add_argument('audiofile', help='Audio file to analyse')
@@ -16,12 +90,19 @@ parser.add_argument('--chunksize', metavar='SAMPLES', default=2**12, type=int, h
 parser.add_argument('--threshold-on', metavar='dB', default=-30.0, type=float, help='dB value to start marking a section as interesting.')
 parser.add_argument('--threshold-off', metavar='dB', default=-40.0, type=float, help='dB value to stop marking a section as interesting.')
 parser.add_argument('--confirm-continue', action='store_true', help='If active, you must confirm (press enter) to continue after each interesting section.')
+
+player = None
+try:
+    player = PyaudioAudioPlayer()
+except:
+    try: player = PygletAudioPlayer()
+    except: pass
+if not player: parser.error('This tool requires either PyAudio or pyglet for playback.')
+
 args = parser.parse_args()
 
 w = wave.open(args.audiofile, mode='rb')
-player = pyglet.media.Player()
-music = pyglet.media.load(args.audiofile)
-player.queue(music)
+player.open(args.audiofile)
 
 chunksize = args.chunksize
 samplewidth = w.getsampwidth()
