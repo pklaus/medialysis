@@ -9,8 +9,6 @@ import time
 import math
 
 class Player(object):
-    def open(self, filename):
-        self.filename = filename
 
     def play(self):
         raise NotImplemented
