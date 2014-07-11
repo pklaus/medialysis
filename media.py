@@ -40,6 +40,16 @@ class PygletAudioPlayer(Player):
 
 class PyaudioAudioPlayer(Player):
 
+    """
+    Player implemented with PyAudio
+     
+    http://people.csail.mit.edu/hubert/pyaudio/
+     
+    Mac OS X:
+     
+      brew install portaudio
+      pip install http://people.csail.mit.edu/hubert/pyaudio/packages/pyaudio-0.2.8.tar.gz
+    """
     def __init__(self):
         import pyaudio
 
