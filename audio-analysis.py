@@ -38,10 +38,14 @@ def main():
     samplewidth = w.getsampwidth()
     framerate = w.getframerate()
     nchannels = w.getnchannels()
+    nframes = w.getnframes()
     
     def get_dB(samplevalue):
         samplevalue = max(samplevalue, 1)
         return 20*math.log(float(samplevalue) /(2**15-1))/math.log(10)
+
+    print("Total duration: {}".format(format_time(nframes/framerate)))
+    print("Total # frames: {}".format(nframes))
     
     # convert skip from s to frames:
     skipframes = int(args.skip * framerate / chunksize)
