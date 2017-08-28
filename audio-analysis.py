@@ -9,11 +9,13 @@ import time
 import math
 from media import PygletAudioPlayer, PyaudioAudioPlayer
 
+from time_converters import parse_time, format_time
+
 def main():
 
     parser = argparse.ArgumentParser(description='Analyze RMS values and calculate dB of sections in audio files.')
     parser.add_argument('audiofile', help='Audio file to analyse')
-    parser.add_argument('--skip', metavar='SECONDS', default=0.0, type=float, help='Seconds to skip in the beginning')
+    parser.add_argument('--skip', metavar='SECONDS', default=0.0, type=parse_time, help='Seconds to skip in the beginning')
     parser.add_argument('--chunksize', metavar='SAMPLES', default=2**12, type=int, help='Size of the chunks to analyse')
     parser.add_argument('--threshold-on', metavar='dB', default=-30.0, type=float, help='dB value to start marking a section as interesting.')
     parser.add_argument('--threshold-off', metavar='dB', default=-40.0, type=float, help='dB value to stop marking a section as interesting.')
@@ -66,9 +68,8 @@ def main():
             on = True
             player.seek(position)
             player.play()
-            sys.stdout.write("                                          \r")
+            print("getting loud at {}".format(format_time(position)))
             sys.stdout.flush()
-            print("getting loud at {:.3f} s".format(position))
             loud_rms_values = []
         elif on and dB <= args.threshold_off:
             on = False
@@ -76,7 +77,7 @@ def main():
             print("Maximum value in loud phase: {} ({:.1f} dB)".format(max_rms, get_dB(max_rms)))
             avg_rms = int(sum(loud_rms_values)/float(len(loud_rms_values)))
             print("Average value in loud phase: {} ({:.1f} dB)".format(avg_rms, get_dB(avg_rms)))
-            print("getting silent at {:.3f} s".format(position))
+            print("getting silent at {}".format(format_time(position)))
             loud_sections_duration.append(len(loud_rms_values))
             while (position - player.time > -0.2):
                 st = position - player.time + 0.2
