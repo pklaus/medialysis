@@ -57,7 +57,7 @@ def video_analysis(videofile, **kwargs):
         diffsum = dimg.sum()
         diffmax = dimg.max()
         npixabovethresh = cv2.threshold(dimg, kwargs['threshold'], 1, cv2.THRESH_BINARY)[1].sum()
-        status_output = "Frame #: {:8d} ({:.3f} s)    diff sum: {:4d}    diff max: {:3d}    npix above: {:3d} \r"
+        status_output = "Frame #: {:8d} ({:9.3f} s)    diff sum: {:12d}    diff max: {:9d}    npix above: {:6d} \r"
         sys.stdout.write(status_output.format(framenum, framenum/kwargs['fps'], diffsum, diffmax, npixabovethresh))
         sys.stdout.flush()
 
