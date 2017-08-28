@@ -24,7 +24,7 @@ def diffImg(t0, t1, t2):
 cap = cv2.VideoCapture(videofile)
 
 winName = "Movement Indicator"
-cv2.namedWindow(winName, cv2.CV_WINDOW_AUTOSIZE)
+cv2.namedWindow(winName)
 
 # Read three images first:
 t_minus = cv2.cvtColor(cap.read()[1], cv2.COLOR_RGB2GRAY)
@@ -37,7 +37,7 @@ THRESHOLD=20
 NUMTHRESH=30
 FPS=3.0
 wait_to_continue=False
-minisize = (t.shape[1]/DOWNSCALE,t.shape[0]/DOWNSCALE)
+minisize = (t.shape[1]//DOWNSCALE,t.shape[0]//DOWNSCALE)
 
 above_thresh = []
 
