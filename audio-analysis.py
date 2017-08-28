@@ -40,6 +40,9 @@ def main():
     nchannels = w.getnchannels()
     nframes = w.getnframes()
     
+    bit_depth = {1: 'i', 2: 'h'}[samplewidth]
+    fmt = f"<{nchannels*chunksize:d}{bit_depth:s}"
+
     def get_dB(samplevalue):
         samplevalue = max(samplevalue, 1)
         return 20*math.log(float(samplevalue) /(2**15-1))/math.log(10)
@@ -59,12 +62,20 @@ def main():
     time.sleep(0.5)
     i = skipframes
     while True:
+        i += 1
         f = w.readframes(chunksize)
-        if len(f) < (chunksize * samplewidth): break
-        d = struct.unpack("<" + str(nchannels * chunksize) + "h", f)
+        if len(f) != (chunksize * samplewidth * nchannels):
+            #import pdb; pdb.set_trace()
+            if w.tell() == nframes:
+                print("Analysis arrived to end of file... stopping now")
+                break
+            print('Incorrect number of samples.')
+            print(f"len(f) = {len(f)}  !=  (chunksize * samplewidth * nchannels) = {chunksize} * {samplewidth} * {nchannels} = {chunksize * samplewidth * nchannels}")
+            sys.exit(1)
+        d = struct.unpack(fmt, f)
         left = d[::2]
         right = d[1::2]
-        position = float(i * chunksize) / framerate
+        position = float((i-1) * chunksize) / framerate
         value = audioop.rms(f, samplewidth)
         dB = get_dB(value)
         rms.append(value)
@@ -97,17 +108,17 @@ def main():
             sys.stdout.flush()
             # in confirm-continue mode you may also want to have more time to see the current power:
             if args.confirm_continue: time.sleep(0.001)
-        i += 1
     
     if len(loud_sections_duration) > 0:
         print("Number of loud sections: {}".format(len(loud_sections_duration)))
         average_sections = sum(loud_sections_duration)/float(len(loud_sections_duration))
         print("Average number of chunks in loud sections: {:.1f}".format(average_sections))
         print("Average duration of loud sections: {:.3f} s".format( average_sections * chunksize / framerate ))
+    elif on:
+        print("Only 'one' big loud section. Try raising your threshold!")
     else:
         print("No loud sections found!")
     print("Analyzed {} pieces of {} samples each.".format(len(rms), chunksize))
 
 if __name__ == "__main__":
     main()
-
