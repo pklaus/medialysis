@@ -50,17 +50,17 @@ def main():
     print("Total duration: {}".format(format_time(nframes/framerate)))
     print("Total # frames: {}".format(nframes))
     
-    # convert skip from s to frames:
-    skipframes = int(args.skip * framerate / chunksize)
-    print("Skipping {} frames".format(skipframes))
+    # convert skip from s to chunks:
+    skipchunks = int(args.skip * framerate / chunksize)
+    print(f"Skipping {skipchunks} chunks = {skipchunks * chunksize} frames = {format_time(skipchunks*chunksize/framerate)}")
     
     rms = []
     on = False
     loud_sections_duration = []
-    w.setpos(skipframes*chunksize)
-    player.seek(float(skipframes * chunksize) / framerate)
+    w.setpos(skipchunks*chunksize)
+    player.seek(float(skipchunks * chunksize) / framerate)
     time.sleep(0.5)
-    i = skipframes
+    i = skipchunks
     while True:
         i += 1
         f = w.readframes(chunksize)
