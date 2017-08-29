@@ -47,8 +47,8 @@ def main():
         samplevalue = max(samplevalue, 1)
         return 20*math.log(float(samplevalue) /(2**15-1))/math.log(10)
 
-    print("Total duration: {}".format(format_time(nframes/framerate)))
-    print("Total # frames: {}".format(nframes))
+    print(f"Total duration: {format_time(nframes/framerate)}")
+    print(f"Total # of frames: {nframes}")
     
     # convert skip from s to chunks:
     skipchunks = int(args.skip * framerate / chunksize)
@@ -83,16 +83,16 @@ def main():
             on = True
             player.seek(position)
             player.play()
-            print("getting loud at {}".format(format_time(position)))
+            print(f"getting loud at {format_time(position)}")
             sys.stdout.flush()
             loud_rms_values = []
         elif on and dB <= args.threshold_off:
             on = False
             max_rms = max(loud_rms_values)
-            print("Maximum value in loud phase: {} ({:.1f} dB)".format(max_rms, get_dB(max_rms)))
+            print(f"Maximum value in loud phase: {max_rms} ({get_dB(max_rms):.1f} dB)")
             avg_rms = int(sum(loud_rms_values)/float(len(loud_rms_values)))
-            print("Average value in loud phase: {} ({:.1f} dB)".format(avg_rms, get_dB(avg_rms)))
-            print("getting silent at {}".format(format_time(position)))
+            print(f"Average value in loud phase: {avg_rms} ({get_dB(avg_rms):.1f} dB)")
+            print(f"getting silent at {format_time(position)}")
             loud_sections_duration.append(len(loud_rms_values))
             while (position - player.time > -0.2):
                 st = position - player.time + 0.2
@@ -104,21 +104,21 @@ def main():
         if on:
             loud_rms_values.append(value)
         else:
-            sys.stdout.write("Current power: {:5.1f} dB         \r".format(dB))
+            sys.stdout.write(f"Current power: {dB:5.1f} dB         \r")
             sys.stdout.flush()
             # in confirm-continue mode you may also want to have more time to see the current power:
             if args.confirm_continue: time.sleep(0.001)
     
     if len(loud_sections_duration) > 0:
-        print("Number of loud sections: {}".format(len(loud_sections_duration)))
+        print(f"Number of loud sections: {len(loud_sections_duration)}")
         average_sections = sum(loud_sections_duration)/float(len(loud_sections_duration))
-        print("Average number of chunks in loud sections: {:.1f}".format(average_sections))
-        print("Average duration of loud sections: {:.3f} s".format( average_sections * chunksize / framerate ))
+        print(f"Average number of chunks in loud sections: {average_sections:.1f}")
+        print(f"Average duration of loud sections: {average_sections * chunksize / framerate:.3f} s")
     elif on:
         print("Only 'one' big loud section. Try raising your threshold!")
     else:
         print("No loud sections found!")
-    print("Analyzed {} pieces of {} samples each.".format(len(rms), chunksize))
+    print(f"Analyzed {len(rms)} pieces of {chunksize} samples each.")
 
 if __name__ == "__main__":
     main()
