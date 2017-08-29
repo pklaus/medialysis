@@ -11,11 +11,13 @@ import numpy as np
 import time
 
 settings = {
-    'downscale':  2,
-    'skipframes': 0,
-    'threshold':  20,
-    'numthresh':  30,
-    'fps':        30.,
+    'downscale':   2,
+    'skipframes':  0,
+    'threshold':   20,
+    'numthresh':   30,
+    'fps':         30.,
+    'suppression': False,
+    'waiting':     True,
 }
 
 def diffImg(t0, t1, t2):
@@ -35,7 +37,6 @@ def video_analysis(videofile, **kwargs):
     t = cv2.cvtColor(cap.read()[1], cv2.COLOR_RGB2GRAY)
     t_plus = cv2.cvtColor(cap.read()[1], cv2.COLOR_RGB2GRAY)
 
-    wait_to_continue=False
     minisize = (t.shape[1]//kwargs['downscale'], t.shape[0]//kwargs['downscale'])
 
     above_thresh = []
@@ -57,18 +58,19 @@ def video_analysis(videofile, **kwargs):
         diffsum = dimg.sum()
         diffmax = dimg.max()
         npixabovethresh = cv2.threshold(dimg, kwargs['threshold'], 1, cv2.THRESH_BINARY)[1].sum()
-        status_output = "Frame #: {:8d} ({:9.3f} s)    diff sum: {:12d}    diff max: {:9d}    npix above: {:6d} \r"
-        sys.stdout.write(status_output.format(framenum, framenum/kwargs['fps'], diffsum, diffmax, npixabovethresh))
-        sys.stdout.flush()
+        if not kwargs['suppression'] or True:
+            status_output = "Frame #: {:8d} ({:9.3f} s)    diff sum: {:12d}    diff max: {:9d}    npix above: {:6d} \r"
+            sys.stdout.write(status_output.format(framenum, framenum/kwargs['fps'], diffsum, diffmax, npixabovethresh))
+            sys.stdout.flush()
 
         above_thresh.append(npixabovethresh)
 
-        if npixabovethresh > kwargs['numthresh']:
+        if not kwargs['suppression'] and npixabovethresh > kwargs['numthresh']:
             #import pdb; pdb.set_trace()
             cv2.imshow('frame',cv2.resize(frame, minisize))
             cv2.imshow( winName, cv2.resize(dimg, minisize) )
             keypress = cv2.waitKey(1) & 0xFF
-            while wait_to_continue and keypress != ord('q') and keypress != ord(' '):
+            while kwargs['waiting'] and keypress != ord('q') and keypress != ord(' '):
                 keypress = cv2.waitKey(1000) & 0xFF
             if keypress == ord('q'): break
 
@@ -98,6 +100,8 @@ def main():
     parser.add_argument('--threshold', default=settings['threshold'],  type=int)
     parser.add_argument('--numthresh', default=settings['numthresh'],  type=int)
     parser.add_argument('--fps',       default=settings['fps'],        type=float)
+    parser.add_argument('--suppression',  action='store_false' if settings['suppression'] else 'store_true')
+    parser.add_argument('--waiting',      action='store_false' if settings['waiting']     else 'store_true')
     args = parser.parse_args()
     settings.update(vars(args))
 
